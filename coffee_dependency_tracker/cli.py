@@ -33,6 +33,16 @@ def parse_positive_float(value: str) -> float:
     return cups
 
 
+def parse_positive_int(value: str) -> int:
+    try:
+        n = int(value)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError("Value must be an integer") from exc
+    if n <= 0:
+        raise argparse.ArgumentTypeError("Value must be greater than 0")
+    return n
+
+
 def validate_not_future(timestamp: datetime) -> None:
     if timestamp > datetime.now():
         raise ValueError("Timestamp cannot be in the future")
@@ -58,18 +68,18 @@ def build_parser() -> argparse.ArgumentParser:
     stats_parser.add_argument("--since", type=parse_date, help="Start date (YYYY-MM-DD)")
     stats_parser.add_argument("--until", type=parse_date, help="End date (YYYY-MM-DD)")
     stats_parser.add_argument("--daily", action="store_true", help="Include daily totals")
-    stats_parser.add_argument("--days", type=int, default=7, help="Days for daily totals")
+    stats_parser.add_argument("--days", type=parse_positive_int, default=7, help="Days for daily totals")
 
     report_parser = subparsers.add_parser("report", help="Generate a detailed report")
     report_parser.add_argument("--since", type=parse_date, help="Start date (YYYY-MM-DD)")
     report_parser.add_argument("--until", type=parse_date, help="End date (YYYY-MM-DD)")
-    report_parser.add_argument("--days", type=int, default=14, help="Days to chart")
+    report_parser.add_argument("--days", type=parse_positive_int, default=14, help="Days to chart")
     report_parser.add_argument("--no-chart", action="store_true", help="Skip sparkline")
 
     list_parser = subparsers.add_parser("list", help="List logged entries")
     list_parser.add_argument("--since", type=parse_date, help="Start date (YYYY-MM-DD)")
     list_parser.add_argument("--until", type=parse_date, help="End date (YYYY-MM-DD)")
-    list_parser.add_argument("--limit", type=int, default=10, help="Max entries to show")
+    list_parser.add_argument("--limit", type=parse_positive_int, default=10, help="Max entries to show")
 
     export_parser = subparsers.add_parser("export", help="Export entries")
     export_parser.add_argument("--out", type=Path, required=True, help="Output path")
@@ -103,6 +113,11 @@ def main(argv: list[str] | None = None) -> None:
         return
 
     entries = load_entries(args.data)
+    # Validate common argument constraints
+    # --since must be <= --until when both provided
+    if getattr(args, "since", None) and getattr(args, "until", None):
+        if args.since > args.until:
+            parser.error("--since must be on or before --until")
 
     if args.command == "stats":
         filtered = filter_entries(entries, args.since, args.until)

@@ -60,3 +60,35 @@ class ValidationTests(unittest.TestCase):
 
             self.assertIn("Exported 1 entries", stdout.getvalue())
             self.assertNotEqual(export_path.read_text(encoding="utf-8"), "already here")
+
+    def test_since_until_invalid(self) -> None:
+        with TemporaryDirectory() as tmpdir:
+            data_path = Path(tmpdir) / "coffee.json"
+            data_path.write_text("[]", encoding="utf-8")
+
+            stderr = StringIO()
+            with redirect_stderr(stderr), self.assertRaises(SystemExit) as ctx:
+                main(["--data", str(data_path), "stats", "--since", "2026-06-03", "--until", "2026-06-01"])
+
+            self.assertEqual(ctx.exception.code, 2)
+            self.assertIn("--since must be on or before --until", stderr.getvalue())
+
+    def test_days_must_be_positive(self) -> None:
+        stderr = StringIO()
+        with redirect_stderr(stderr), self.assertRaises(SystemExit) as ctx:
+            main(["stats", "--days", "0"])
+
+        self.assertEqual(ctx.exception.code, 2)
+        self.assertIn("must be greater than 0", stderr.getvalue())
+
+    def test_limit_must_be_positive(self) -> None:
+        with TemporaryDirectory() as tmpdir:
+            data_path = Path(tmpdir) / "coffee.json"
+            data_path.write_text("[]", encoding="utf-8")
+
+            stderr = StringIO()
+            with redirect_stderr(stderr), self.assertRaises(SystemExit) as ctx:
+                main(["--data", str(data_path), "list", "--limit", "0"])
+
+            self.assertEqual(ctx.exception.code, 2)
+            self.assertIn("must be greater than 0", stderr.getvalue())
