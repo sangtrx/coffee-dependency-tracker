@@ -52,3 +52,12 @@ class StorageTests(unittest.TestCase):
         self.assertTrue(_is_sqlite_path(Path("db.sqlite3")))
         self.assertTrue(_is_sqlite_path(Path("data.DB")))
         self.assertFalse(_is_sqlite_path(Path("coffee.json")))
+
+    def test_csv_save_creates_parent_directories(self) -> None:
+        with TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir) / "nested" / "coffee.csv"
+            from coffee_dependency_tracker.storage import save_entries
+
+            save_entries([ENTRY], path)
+
+            self.assertTrue(path.exists())
