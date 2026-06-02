@@ -4,10 +4,13 @@ Log coffee consumption and get a tiny productivity forecast.
 
 ## Quick start
 
+- `python -m pip install -e .`
+- `coffee-dependency-tracker --help`
 - `python main.py add --cups 1`
 - `python main.py add --cups 2 --note "launch prep"`
 - `python main.py stats`
 - `python main.py stats --daily --days 14`
+- `python -m coffee_dependency_tracker --help`
 - `python main.py report --days 14`
 - `python main.py list --limit 5`
 - `python main.py export --out coffee_log.csv`
