@@ -5,8 +5,8 @@ from datetime import date, datetime
 from pathlib import Path
 
 from .models import CoffeeEntry
-from .stats import daily_totals, filter_entries, render_daily_totals, summarize
-from .storage import DEFAULT_LOG_PATH, load_entries, save_entries
+from .stats import build_report, daily_totals, filter_entries, render_daily_totals, summarize
+from .storage import DEFAULT_LOG_PATH, append_entry, load_entries, save_entries
 
 
 def parse_date(value: str) -> date:
@@ -45,6 +45,12 @@ def build_parser() -> argparse.ArgumentParser:
     stats_parser.add_argument("--daily", action="store_true", help="Include daily totals")
     stats_parser.add_argument("--days", type=int, default=7, help="Days for daily totals")
 
+    report_parser = subparsers.add_parser("report", help="Generate a detailed report")
+    report_parser.add_argument("--since", type=parse_date, help="Start date (YYYY-MM-DD)")
+    report_parser.add_argument("--until", type=parse_date, help="End date (YYYY-MM-DD)")
+    report_parser.add_argument("--days", type=int, default=14, help="Days to chart")
+    report_parser.add_argument("--no-chart", action="store_true", help="Skip sparkline")
+
     list_parser = subparsers.add_parser("list", help="List logged entries")
     list_parser.add_argument("--since", type=parse_date, help="Start date (YYYY-MM-DD)")
     list_parser.add_argument("--until", type=parse_date, help="End date (YYYY-MM-DD)")
@@ -63,8 +69,6 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> None:
     args = build_parser().parse_args(argv)
-    entries = load_entries(args.data)
-
     if args.command == "add":
         timestamp = args.at or datetime.now()
         entry = CoffeeEntry(
@@ -73,10 +77,11 @@ def main(argv: list[str] | None = None) -> None:
             note=args.note or "",
             source=args.source or "",
         )
-        entries.append(entry)
-        save_entries(entries, args.data)
+        append_entry(entry, args.data)
         print(f"Logged {args.cups} cup(s) at {entry.timestamp.isoformat(timespec='seconds')}")
         return
+
+    entries = load_entries(args.data)
 
     if args.command == "stats":
         filtered = filter_entries(entries, args.since, args.until)
@@ -84,6 +89,18 @@ def main(argv: list[str] | None = None) -> None:
         if args.daily:
             totals = daily_totals(filtered, days=args.days, now=datetime.now())
             print(render_daily_totals(totals))
+        return
+
+    if args.command == "report":
+        filtered = filter_entries(entries, args.since, args.until)
+        print(
+            build_report(
+                filtered,
+                now=datetime.now(),
+                days=args.days,
+                include_chart=not args.no_chart,
+            )
+        )
         return
 
     if args.command == "list":
