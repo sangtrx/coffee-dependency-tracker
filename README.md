@@ -19,6 +19,10 @@ Log coffee consumption and get a tiny productivity forecast.
 Data is stored in `coffee_log.json` in the repo by default (or pass `--data` with a custom
 `.json` or `.csv` path).
 
+Import behavior: the `import` command accepts JSON or CSV files and replaces the current
+log with the imported data. Importing a non-existent or malformed file will result in an
+empty log (the command reports "Imported 0 entries").
+
 ## Commands
 
 - `add` — Log a coffee (`--at`, `--source`, `--note` supported)

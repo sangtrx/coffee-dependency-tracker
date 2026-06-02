@@ -38,3 +38,10 @@ class StorageTests(unittest.TestCase):
             append_entry(ENTRY, path)
 
             self.assertEqual(load_entries(path), [ENTRY])
+
+    def test_load_malformed_json_returns_empty(self) -> None:
+        with TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir) / "bad.json"
+            path.write_text("{ not: valid json }", encoding="utf-8")
+
+            self.assertEqual(load_entries(path), [])

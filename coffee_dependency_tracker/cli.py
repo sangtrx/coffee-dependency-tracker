@@ -13,6 +13,11 @@ def parse_date(value: str) -> date:
     try:
         return datetime.fromisoformat(value).date()
     except ValueError as exc:
+        """Parse a YYYY-MM-DD date string into a date object.
+
+        Raises argparse.ArgumentTypeError when parsing fails so argparse can
+        present a helpful message to the user.
+        """
         raise argparse.ArgumentTypeError("Date must be YYYY-MM-DD") from exc
 
 
@@ -20,6 +25,11 @@ def parse_datetime(value: str) -> datetime:
     try:
         return datetime.fromisoformat(value)
     except ValueError as exc:
+        """Parse an ISO-format datetime string into a datetime object.
+
+        Raises argparse.ArgumentTypeError when parsing fails so argparse can
+        present a helpful message to the user.
+        """
         raise argparse.ArgumentTypeError("Datetime must be ISO format") from exc
 
 
@@ -27,6 +37,11 @@ def parse_positive_float(value: str) -> float:
     try:
         cups = float(value)
     except ValueError as exc:
+        """Parse a numeric string into a positive float.
+
+        Used for the `--cups` argument. Raises argparse.ArgumentTypeError for
+        invalid or non-positive inputs.
+        """
         raise argparse.ArgumentTypeError("Cups must be a number") from exc
     if cups <= 0:
         raise argparse.ArgumentTypeError("Cups must be greater than 0")
@@ -37,6 +52,11 @@ def parse_positive_int(value: str) -> int:
     try:
         n = int(value)
     except ValueError as exc:
+        """Parse a numeric string into a positive integer.
+
+        Used for `--days` and `--limit`. Raises argparse.ArgumentTypeError for
+        invalid or non-positive inputs.
+        """
         raise argparse.ArgumentTypeError("Value must be an integer") from exc
     if n <= 0:
         raise argparse.ArgumentTypeError("Value must be greater than 0")

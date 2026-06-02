@@ -94,6 +94,12 @@ def append_entry(entry: CoffeeEntry, path: Path = DEFAULT_LOG_PATH) -> None:
 
 
 def _load_entries_json(path: Path) -> list[CoffeeEntry]:
+    """Load entries from a JSON file.
+
+    Returns an empty list when the file is missing, empty, or contains invalid
+    JSON. This is intentional: callers treat a missing or malformed log as an
+    empty dataset rather than raising an exception.
+    """
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
         if isinstance(data, list):
