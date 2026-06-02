@@ -1,8 +1,49 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 
 from .models import CoffeeEntry
+
+
+def filter_entries(
+    entries: list[CoffeeEntry],
+    since: date | None = None,
+    until: date | None = None,
+) -> list[CoffeeEntry]:
+    if since is None and until is None:
+        return list(entries)
+    filtered: list[CoffeeEntry] = []
+    for entry in entries:
+        day = entry.timestamp.date()
+        if since and day < since:
+            continue
+        if until and day > until:
+            continue
+        filtered.append(entry)
+    return filtered
+
+
+def daily_totals(
+    entries: list[CoffeeEntry],
+    days: int = 7,
+    now: datetime | None = None,
+) -> dict[date, float]:
+    now = now or datetime.now()
+    days = max(1, days)
+    start = now.date() - timedelta(days=days - 1)
+    totals = {start + timedelta(days=i): 0.0 for i in range(days)}
+    for entry in entries:
+        day = entry.timestamp.date()
+        if day in totals:
+            totals[day] += entry.cups
+    return totals
+
+
+def render_daily_totals(totals: dict[date, float]) -> str:
+    lines = ["Daily totals:"]
+    for day in sorted(totals.keys()):
+        lines.append(f"- {day.isoformat()}: {totals[day]:.1f} cup(s)")
+    return "\n".join(lines)
 
 
 def summarize(entries: list[CoffeeEntry], now: datetime | None = None) -> str:
