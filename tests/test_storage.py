@@ -45,3 +45,10 @@ class StorageTests(unittest.TestCase):
             path.write_text("{ not: valid json }", encoding="utf-8")
 
             self.assertEqual(load_entries(path), [])
+
+    def test_is_sqlite_path_recognizes_extensions(self) -> None:
+        from coffee_dependency_tracker.storage import _is_sqlite_path
+
+        self.assertTrue(_is_sqlite_path(Path("db.sqlite3")))
+        self.assertTrue(_is_sqlite_path(Path("data.DB")))
+        self.assertFalse(_is_sqlite_path(Path("coffee.json")))
