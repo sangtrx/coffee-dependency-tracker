@@ -71,7 +71,7 @@ def validate_not_future(timestamp: datetime) -> None:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Track coffee consumption with tiny stats.")
+    parser = argparse.ArgumentParser(description=f"{APP_NAME} — Track coffee consumption with tiny stats.")
     parser.add_argument(
         "--data",
         type=Path,
