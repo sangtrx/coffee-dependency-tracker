@@ -14,6 +14,7 @@ Log coffee consumption and get a tiny productivity forecast.
 - `python main.py report --days 14`
 - `python main.py list --limit 5`
 - `python main.py export --out coffee_log.csv`
+- `python main.py export --out coffee_log.csv --force`
 
 Data is stored in `coffee_log.json` in the repo by default (or pass `--data` with a custom
 `.json` or `.csv` path).
@@ -24,5 +25,10 @@ Data is stored in `coffee_log.json` in the repo by default (or pass `--data` wit
 - `stats` — Summary stats (`--since`, `--until`, `--daily`)
 - `report` — Detailed report with trend, streaks, and sparkline (`--since`, `--until`, `--days`, `--no-chart`)
 - `list` — Show recent entries (`--limit`)
-- `export` — Export filtered data to JSON or CSV
+- `export` — Export filtered data to JSON or CSV (`--force` overwrites an existing file)
 - `import` — Replace the current log from a JSON or CSV file
+
+Validation:
+
+- `--cups` must be greater than 0
+- `--at` cannot be in the future
