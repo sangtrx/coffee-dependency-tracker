@@ -101,3 +101,43 @@ class CliTests(unittest.TestCase):
 
             self.assertIn("Imported 0 entries", stdout.getvalue())
             self.assertEqual(data_path.read_text(encoding="utf-8"), "[]")
+
+    def test_cli_import_nonexistent_path_reports_zero(self) -> None:
+        with TemporaryDirectory() as tmpdir:
+            data_path = Path(tmpdir) / "coffee.json"
+            import_path = Path(tmpdir) / "does_not_exist.json"
+
+            stdout = StringIO()
+            with redirect_stdout(stdout):
+                main(["--data", str(data_path), "import", str(import_path)])
+
+            self.assertIn("Imported 0 entries", stdout.getvalue())
+
+    def test_cli_import_malformed_json_reports_zero(self) -> None:
+        with TemporaryDirectory() as tmpdir:
+            data_path = Path(tmpdir) / "coffee.json"
+            import_path = Path(tmpdir) / "bad.json"
+            import_path.write_text("{ not: valid json }", encoding="utf-8")
+
+            stdout = StringIO()
+            with redirect_stdout(stdout):
+                main(["--data", str(data_path), "import", str(import_path)])
+
+            self.assertIn("Imported 0 entries", stdout.getvalue())
+
+    def test_cli_export_csv_format_writes_csv(self) -> None:
+        with TemporaryDirectory() as tmpdir:
+            data_path = Path(tmpdir) / "coffee.json"
+            data_entries = [
+                CoffeeEntry.from_dict({"timestamp": "2026-06-01T09:00:00", "cups": 1, "note": "", "source": "desk"}),
+            ]
+            save_entries(data_entries, data_path)
+
+            out_path = Path(tmpdir) / "out.csv"
+            stdout = StringIO()
+            with redirect_stdout(stdout):
+                main(["--data", str(data_path), "export", "--out", str(out_path), "--force"]) 
+
+            self.assertTrue(out_path.exists())
+            text = out_path.read_text(encoding="utf-8")
+            self.assertIn("timestamp,cups,note,source", text)
