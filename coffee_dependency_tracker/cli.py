@@ -23,6 +23,21 @@ def parse_datetime(value: str) -> datetime:
         raise argparse.ArgumentTypeError("Datetime must be ISO format") from exc
 
 
+def parse_positive_float(value: str) -> float:
+    try:
+        cups = float(value)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError("Cups must be a number") from exc
+    if cups <= 0:
+        raise argparse.ArgumentTypeError("Cups must be greater than 0")
+    return cups
+
+
+def validate_not_future(timestamp: datetime) -> None:
+    if timestamp > datetime.now():
+        raise ValueError("Timestamp cannot be in the future")
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Track coffee consumption with tiny stats.")
     parser.add_argument(
@@ -34,7 +49,7 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     add_parser = subparsers.add_parser("add", help="Log a coffee")
-    add_parser.add_argument("--cups", type=float, default=1.0, help="How many cups")
+    add_parser.add_argument("--cups", type=parse_positive_float, default=1.0, help="How many cups")
     add_parser.add_argument("--note", help="Optional note")
     add_parser.add_argument("--source", help="Brew type or source label")
     add_parser.add_argument("--at", type=parse_datetime, help="Timestamp (ISO format)")
@@ -60,6 +75,7 @@ def build_parser() -> argparse.ArgumentParser:
     export_parser.add_argument("--out", type=Path, required=True, help="Output path")
     export_parser.add_argument("--since", type=parse_date, help="Start date (YYYY-MM-DD)")
     export_parser.add_argument("--until", type=parse_date, help="End date (YYYY-MM-DD)")
+    export_parser.add_argument("--force", action="store_true", help="Overwrite an existing file")
 
     import_parser = subparsers.add_parser("import", help="Import entries (replaces current log)")
     import_parser.add_argument("path", type=Path, help="Path to JSON/CSV file")
@@ -68,9 +84,14 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> None:
-    args = build_parser().parse_args(argv)
+    parser = build_parser()
+    args = parser.parse_args(argv)
     if args.command == "add":
         timestamp = args.at or datetime.now()
+        try:
+            validate_not_future(timestamp)
+        except ValueError as exc:
+            parser.error(str(exc))
         entry = CoffeeEntry(
             timestamp=timestamp,
             cups=args.cups,
@@ -117,6 +138,8 @@ def main(argv: list[str] | None = None) -> None:
 
     if args.command == "export":
         filtered = filter_entries(entries, args.since, args.until)
+        if args.out.exists() and not args.force:
+            parser.error(f"Output file already exists: {args.out} (use --force to overwrite)")
         save_entries(filtered, args.out)
         print(f"Exported {len(filtered)} entries to {args.out}")
         return
