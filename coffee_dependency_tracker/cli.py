@@ -3,6 +3,8 @@ from __future__ import annotations
 import argparse
 from datetime import date, datetime
 from pathlib import Path
+ 
+APP_NAME = "coffee-dependency-tracker"
 
 from .models import CoffeeEntry
 from .stats import build_report, daily_totals, filter_entries, render_daily_totals, summarize

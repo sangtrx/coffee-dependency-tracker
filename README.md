@@ -16,6 +16,12 @@ Log coffee consumption and get a tiny productivity forecast.
 - `python main.py export --out coffee_log.csv`
 - `python main.py export --out coffee_log.csv --force`
 
+Run tests:
+
+```
+python -m unittest discover -s tests -t . -v
+```
+
 Data is stored in `coffee_log.json` in the repo by default (or pass `--data` with a custom
 `.json` or `.csv` path).
 
