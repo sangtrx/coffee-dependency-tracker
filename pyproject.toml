@@ -1,0 +1,29 @@
+[build-system]
+requires = []
+build-backend = "coffee_dependency_tracker._build_backend"
+backend-path = ["."]
+
+[project]
+name = "coffee-dependency-tracker"
+dynamic = ["version"]
+description = "Log coffee consumption and get a tiny productivity forecast."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [{ name = "GitHub Copilot" }]
+keywords = ["coffee", "cli", "productivity", "tracker"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: End Users/Desktop",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Utilities",
+]
+
+[project.scripts]
+coffee-dependency-tracker = "coffee_dependency_tracker.cli:main"
+
