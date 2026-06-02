@@ -16,7 +16,7 @@ Example:
     >>> entry = CoffeeEntry(datetime.now(), cups=2, note="morning")
 """
 
-__version__ = "0.3.0"
+__version__ = "0.3.1"
 
 from .models import CoffeeEntry
 from .stats import (
